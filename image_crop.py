@@ -1,6 +1,8 @@
 import cv2
 import matplotlib.patches as patches
 import matplotlib.pyplot as plt
+import matplotlib as mpl
+mpl.rcParams['toolbar'] = 'None'
 plt.rcParams['font.family'] = 'NanumGothic'
 plt.rcParams['axes.unicode_minus'] = False
 
@@ -43,6 +45,7 @@ def add_point(event):
             x, y = event.xdata, event.ydata
             pos.append((x, y))
             point = plt.scatter(x, y, c='black')
+            plt.title('나머지 한곳도 눌러주세요!')
         elif len(pos) == 1:
             x, y = event.xdata, event.ydata
             pos.append((x, y))
@@ -58,11 +61,13 @@ def add_point(event):
                 facecolor='yellow',
             )
             ax.add_patch(rect)
+            plt.title('다시 선택하시려면 마우스 우클릭, 완료하시려면 엔터를 눌러주세요!')
 
         plt.draw()
 
     # button 3: 마우스 우클릭
     if event.button == 3:
+        plt.title('마우스 좌클릭으로 구역을 지정하세요!')
         pos.clear()
         try:
             rect.remove()
@@ -80,7 +85,8 @@ def end(event):
         plt.disconnect(mouse)
         plt.close()
         cropped_image = crop_image(img, pos)
-        cv2.imshow("output", cropped_image)
+        cv2.cvtColor(cropped_image, cv2.COLOR_BGR2RGB, dst=cropped_image)
+        cv2.imshow("Cropped Image", cropped_image)
         pass
 
 
