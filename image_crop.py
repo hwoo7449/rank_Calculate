@@ -1,6 +1,7 @@
 import cv2
 import matplotlib.patches as patches
 import matplotlib.pyplot as plt
+import time
 import matplotlib as mpl
 mpl.rcParams['toolbar'] = 'None'
 plt.rcParams['font.family'] = 'NanumGothic'
@@ -13,6 +14,8 @@ img_c = plt.imshow(img)
 ax = plt.gca()
 plt.title('마우스 좌클릭으로 구역을 지정하세요!')
 
+hovering_rect = None
+
 
 pos = []
 
@@ -22,6 +25,22 @@ def set_pos_rec(pos: list):
     ltx, lty = pos[0]
     # Right-Bottom
     rbx, rby = pos[1]
+
+    # Left-Bottom
+    lbx = ltx
+    lby = rby
+
+    width = rbx - ltx
+    height = lty - rby
+
+    return (lbx, lby), width, height
+
+
+def set_pos_hovering_rec(pos: list, x, y):
+    # Left-Top
+    ltx, lty = pos[0]
+    # Right-Bottom
+    rbx, rby = x, y
 
     # Left-Bottom
     lbx = ltx
@@ -55,7 +74,7 @@ def add_point(event):
             rect = patches.Rectangle(
                 lbcp,      # (x, y) coordinates of left-bottom corner point
                 width, height,            # width, height
-                edgecolor='Black',
+                edgecolor='Red',
                 linestyle='solid',
                 fill=False,
                 facecolor='yellow',
@@ -90,6 +109,33 @@ def end(event):
         pass
 
 
+def move_mouse(event):
+    global hovering_rect
+    if event.inaxes != ax:
+        return
+
+    if len(pos) == 1:
+        if hovering_rect is not None:
+            hovering_rect.remove()
+            hovering_rect = None
+        x = event.xdata
+        y = event.ydata
+
+        lbcp, width, height = set_pos_hovering_rec(pos, x, y)
+        hovering_rect = patches.Rectangle(
+            lbcp,      # (x, y) coordinates of left-bottom corner point
+            width, height,            # width, height
+            edgecolor='Black',
+            linestyle='solid',
+            fill=False,
+            facecolor='yellow',
+        )
+        ax.add_patch(hovering_rect)
+
+        plt.draw()
+        time.sleep(0.01)
+
+
 def crop_image(img, pos: list):
     # Left-Top
     ltx, lty = pos[0]
@@ -107,4 +153,5 @@ def crop_image(img, pos: list):
 
 mouse = plt.connect('button_press_event', add_point)
 keyboard = plt.connect('key_press_event', end)
+moving_mouse = plt.connect('motion_notify_event', move_mouse)
 plt.show()
